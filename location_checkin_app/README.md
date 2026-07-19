@@ -1,35 +1,61 @@
 # FieldCheck — Verified Logs Engine 🛡️
 
-FieldCheck is a clean, reliable Flutter application engineered to execute and manage authenticated field check-in records. By tightly combining real-time hardware telemetry with native on-device camera frames, the app ensures every data entry is anchored to a verified physical location and visual profile.
+FieldCheck is a clean, reliable Flutter application engineered to execute and manage authenticated field check-in records. By tightly combining real-time hardware telemetry constraints with native on-device camera frames, the app ensures every data entry is anchored to a verified physical location and visual profile.
 
 The user interface uses a clear, sequential linear list view that makes tracking and verifying logs chronological and straightforward.
 
 ---
 
-## 🏗️ Core Architectural Modules
+## ✨ Features
 
-The platform is split into four distinct system spaces:
-
-*   **Welcome Animation Engine:** A custom-scaled backdrop sequence managing system-wide hardware availability checks before mounting the main framework.
-*   **The Linear Ledger Dashboard:** A chronological full-width card layout displaying your verification records. Items can be checked or removed easily using integrated dismissible swipe mechanics.
-*   **Telemetry Acquisition Hub:** Handles async permission parsing and polling of satellite configurations to resolve `Latitude`, `Longitude`, and `Accuracy Radius` metrics down to sub-meter metrics.
-*   **Hardware Lens Layer:** An inline camera preview pipeline built to circumvent raw OS capture sheets for secure, dedicated document and space isolation.
-
----
-
-## 🛠️ Technical Stack & Dependencies
-
-*   **Framework:** Flutter (Material 3 Adaptive Design)
-*   **Storage Framework:** Local storage persistence via `shared_preferences` JSON string serialization.
-*   **Location API:** High-accuracy real-time polling using `geolocator`.
-*   **Camera Pipeline:** Low-latency image streams controlled directly via the `camera` subsystem.
-*   **Permission Controller:** `permission_handler` routine for handling native hardware restrictions gracefully.
+*   **Real-Time Hardware Telemetry:** Fetches precise GPS coordinates (`Latitude`, `Longitude`) and accuracy metrics automatically during check-ins.
+*   **Secure Hardware Lens Isolation:** Captures camera frames directly within an inline app layer, avoiding raw OS share sheets to ensure data integrity.
+*   **Persistent Linear Ledger:** Displays verification logs chronologically in a full-width card layout.
+*   **Dismissible Swipe Mechanics:** Provides a clean, gesture-based swipe interaction to remove tracking logs instantly.
+*   **Local Permanence Engine:** Saves records directly to the device using secure JSON string serialization so data survives app restarts.
+*   **Hardware Guard Rails:** Validates system-level location permissions and hardware availability before allowing access.
 
 ---
 
-## 🚀 Getting Started
+## 📱 Application Screens
 
-### Prerequisites
-Ensure your local environment has the Flutter SDK correctly configured:
-```bash
-flutter doctor
+The application flows sequentially through these core views:
+1.  **Welcome & System Validation Screen:** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
+2.  **Linear Ledger Dashboard:** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
+3.  **Camera Capture Layer:** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
+
+---
+
+## 🔌 Plugins & Dependencies
+
+The project relies on the following core plugins to bridge the Flutter framework with native hardware layers:
+
+| Plugin | Purpose |
+| :--- | :--- |
+| `geolocator` | Handles high-accuracy asynchronous satellite polling for location coordinates. |
+| `camera` | Manages low-latency inline image streams directly from the device lens ecosystem. |
+| `shared_preferences` | Provides persistent on-device key-value storage via JSON string serialization. |
+| `permission_handler` | Gracefully negotiates native OS permission runtime prompts and fallback alerts. |
+
+---
+
+## 📂 Project Structure
+
+The codebase follows a modular structure separated by distinct architecture spaces:
+
+```text
+lib/
+├── main.dart                 # Application entry point & global theme registration
+├── core/
+│   ├── constants/            # Global UI tokens and configuration variables
+│   └── utils/                # Serialization helpers and JSON string parsers
+├── data/
+│   └── local_storage.dart    # SharedPreferences read/write interface layer
+└── presentation/
+    ├── screens/
+    │   ├── welcome_screen.dart   # Welcome animation & permission verification layer
+    │   ├── dashboard_screen.dart # Chronological ledger stack view
+    │   └── camera_screen.dart    # Secure inline camera snapshot workspace
+    └── widgets/
+        ├── ledger_card.dart  # Individual record layout with swipe support
+        └── telemetry_bar.dart # GPS metadata readout panel
