@@ -59,3 +59,14 @@ lib/
     └── widgets/
         ├── ledger_card.dart  # Individual record layout with swipe support
         └── telemetry_bar.dart # GPS metadata readout panel
+```
+Prerequisites
+Before setting up the project, make sure you have the following software installed on your machine:
+
+Flutter SDK: Version 3.x.x or higher installed.
+
+Dart SDK: Bundled directly with Flutter.
+
+IDE: Visual Studio Code, Android Studio, or IntelliJ IDEA with the Flutter/Dart plugins installed.
+
+Target Device: An Android or iOS device (or an active emulator/simulator) to run the camera and GPS tasks.
