@@ -85,7 +85,7 @@ Setup Sequence:
 Follow these precise, step-by-step terminal commands to deploy and run the app:
 
 1. Clone the repository:
-https://github.com/buildsrike7/FieldCheck.git
+git clone [https://github.com/buildsrike7/FieldCheck.git](https://github.com/buildsrike7/FieldCheck.git)
 
 2. Navigate into the project folder
 cd field-check
