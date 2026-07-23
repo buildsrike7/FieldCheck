@@ -41,25 +41,20 @@ The project relies on the following core plugins to bridge the Flutter framework
 
 ## 📂 Project Structure
 
-The codebase follows a modular structure separated by distinct architecture spaces:
+The single-file entry architecture is structured clearly within `lib/main.dart`:
 
 ```text
 lib/
-├── main.dart                 # Application entry point & global theme registration
-├── core/
-│   ├── constants/            # Global UI tokens and configuration variables
-│   └── utils/                # Serialization helpers and JSON string parsers
-├── data/
-│   └── local_storage.dart    # SharedPreferences read/write interface layer
-└── presentation/
-    ├── screens/
-    │   ├── welcome_screen.dart   # Welcome animation & permission verification layer
-    │   ├── dashboard_screen.dart # Chronological ledger stack view
-    │   └── camera_screen.dart    # Secure inline camera snapshot workspace
-    └── widgets/
-        ├── ledger_card.dart  # Individual record layout with swipe support
-        └── telemetry_bar.dart # GPS metadata readout panel
-```
+└── main.dart                 # Complete single-file application engine
+    ├── CheckInRecord         # Data model & JSON serialization factory
+    ├── MyApp                 # Root MaterialApp setup & Material 3 theme configuration
+    ├── WelcomeAnimationScreen# Initial animated splash screen & permission checks
+    ├── CameraScreen          # Custom inline hardware camera interface
+    ├── NewCheckInScreen      # Check-in submission form (photo + GPS acquisition)
+    ├── CheckInDetailScreen   # Verification detail view for individual logs
+    └── MyHomePage            # Main ledger dashboard & SharedPreferences engine
+
+## 🚀 Installation & Running
 Prerequisites
 Before setting up the project, make sure you have the following software installed on your machine:
 
@@ -70,3 +65,8 @@ Dart SDK: Bundled directly with Flutter.
 IDE: Visual Studio Code, Android Studio, or IntelliJ IDEA with the Flutter/Dart plugins installed.
 
 Target Device: An Android or iOS device (or an active emulator/simulator) to run the camera and GPS tasks.
+
+Setup Sequence
+Follow these precise, step-by-step terminal commands to deploy and run the app:
+
+Clone the repository
