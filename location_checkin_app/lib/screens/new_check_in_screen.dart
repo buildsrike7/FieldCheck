@@ -1,141 +1,137 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import '../models/check_in_record.dart';
+import '../services/storage_service.dart';
 import 'camera_screen.dart';
 
 class NewCheckInScreen extends StatefulWidget {
   const NewCheckInScreen({super.key});
 
   @override
-  State<NewCheckInScreen> createState() => NewCheckInScreenState();
+  State<NewCheckInScreen> createState() => _NewCheckInScreenState();
 }
 
-class NewCheckInScreenState extends State<NewCheckInScreen> {
-  String? imagePath;
-  Position? currentPosition;
-  bool isFetchingLocation = false;
-  bool isSaving = false;
-  String? locationError;
-  final TextEditingController noteController = TextEditingController();
+class _NewCheckInScreenState extends State<NewCheckInScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _noteController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    checkAndFetchLocation();
+  String? _imagePath;
+  Position? _currentPosition;
+  bool _isLocating = false;
+  bool _isSaving = false;
+
+  Future<void> _openCamera() async {
+    final path = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const CameraScreen()),
+    );
+    if (!mounted) return;
+    if (path != null) {
+      setState(() => _imagePath = path);
+    }
   }
 
-  Future<void> checkAndFetchLocation() async {
-    setState(() {
-      isFetchingLocation = true;
-      locationError = null;
-    });
-
+  Future<void> _getLocation() async {
+    setState(() => _isLocating ? null : _isLocating = true);
     try {
+      var status = await Permission.location.request();
+      if (!mounted) return;
+      if (!status.isGranted) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Location Permission Required'),
+            content: const Text('This app needs your GPS location to record check-ins accurately. Please allow location access.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        throw 'Location permission denied.';
+      }
+
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!mounted) return;
       if (!serviceEnabled) {
-        if (!mounted) return;
-        setState(() {
-          locationError = 'GPS is disabled.';
-          isFetchingLocation = false;
-        });
-        return;
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('GPS Disabled'),
+            content: const Text('Please turn on your device location services to fetch coordinates.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        throw 'Location services are disabled.';
       }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (!mounted) return;
-          setState(() {
-            locationError = 'Location permission denied.';
-            isFetchingLocation = false;
-          });
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (!mounted) return;
-        setState(() {
-          locationError = 'Location permanently denied.';
-          isFetchingLocation = false;
-        });
-        return;
-      }
-
-      final Position position = await Geolocator.getCurrentPosition(
+      Position position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 10,
         ),
       );
 
       if (!mounted) return;
-      setState(() {
-        currentPosition = position;
-        isFetchingLocation = false;
-      });
+      setState(() => _currentPosition = position);
     } catch (e) {
-      debugPrint("Error: $e");
       if (!mounted) return;
-      setState(() {
-        locationError = 'Failed to get GPS.';
-        isFetchingLocation = false;
-      });
-    }
-  }
-
-  Future<void> openCamera() async {
-    final String? path = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const CameraScreen()),
-    );
-
-    if (path != null && mounted) {
-      setState(() => imagePath = path);
-    }
-  }
-
-  Future<void> saveCheckIn() async {
-    if (imagePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please capture an image first')),
+        SnackBar(content: Text('Could not get location: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
+  }
+
+  Future<void> _saveCheckIn() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_imagePath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please take a photo first.')),
+      );
+      return;
+    }
+    if (_currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fetch your location first.')),
       );
       return;
     }
 
-    if (currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Awaiting valid GPS coordinates...')),
+    setState(() => _isSaving = true);
+
+    try {
+      final record = CheckInRecord(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        note: _noteController.text.trim(),
+        imagePath: _imagePath!,
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        accuracy: _currentPosition!.accuracy,
+        timestamp: DateTime.now(),
       );
-      return;
+
+      await StorageService.saveRecord(record);
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save record: $e')),
+      );
+      setState(() => _isSaving = false);
     }
-
-    setState(() => isSaving = true);
-
-    final newRecord = CheckInRecord(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      imagePath: imagePath!,
-      latitude: currentPosition!.latitude,
-      longitude: currentPosition!.longitude,
-      accuracy: currentPosition!.accuracy,
-      timestamp: DateTime.now(),
-      note: noteController.text.trim(),
-    );
-
-    final prefs = await SharedPreferences.getInstance();
-    final String? existingJson = prefs.getString('check_in_records');
-    List<dynamic> recordsList = existingJson != null ? jsonDecode(existingJson) : [];
-
-    recordsList.insert(0, newRecord.toMap());
-    await prefs.setString('check_in_records', jsonEncode(recordsList));
-
-    if (!mounted) return;
-    Navigator.pop(context, true);
   }
 
   @override
@@ -144,92 +140,97 @@ class NewCheckInScreenState extends State<NewCheckInScreen> {
       appBar: AppBar(title: const Text('New Check-In')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text('Note', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: noteController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter observation note...',
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  labelText: 'Check-In Note',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter a note.';
+                  }
+                  return null;
+                },
+                maxLines: 2,
               ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: openCamera,
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Take Photo'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 140,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                border: Border.all(color: Colors.grey[400]!),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: imagePath != null
+              const SizedBox(height: 20),
+              _imagePath != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.file(File(imagePath!), fit: BoxFit.cover, width: double.infinity),
+                      child: Image.file(
+                        File(_imagePath!),
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
                     )
-                  : const Center(
-                      child: Text('IMG / X', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  : Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(child: Text('No photo captured yet')),
                     ),
-            ),
-            const SizedBox(height: 20),
-            OutlinedButton.icon(
-              onPressed: checkAndFetchLocation,
-              icon: const Icon(Icons.gps_fixed),
-              label: const Text('Get Location'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: _openCamera,
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Take Photo'),
               ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 20),
+              Card(
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'GPS Coordinates',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      _isLocating
+                          ? const CircularProgressIndicator()
+                          : _currentPosition != null
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Lat: ${_currentPosition!.latitude.toStringAsFixed(5)}'),
+                                    Text('Long: ${_currentPosition!.longitude.toStringAsFixed(5)}'),
+                                    Text('Accuracy: ${_currentPosition!.accuracy.toStringAsFixed(1)}m'),
+                                  ],
+                                )
+                              : const Text('Location not fetched yet.'),
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        onPressed: _isLocating ? null : _getLocation,
+                        icon: const Icon(Icons.location_pin),
+                        label: const Text('Get Location'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (isFetchingLocation)
-                    const Text('fetching... (loading state)', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))
-                  else if (locationError != null)
-                    Text(locationError!, style: const TextStyle(color: Colors.red, fontSize: 13))
-                  else if (currentPosition != null) ...[
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Latitude'), Text(currentPosition!.latitude.toStringAsFixed(5))]),
-                    const Divider(),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Longitude'), Text(currentPosition!.longitude.toStringAsFixed(5))]),
-                    const Divider(),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Accuracy'), Text('${currentPosition!.accuracy.toStringAsFixed(1)} m')]),
-                  ] else
-                    const Text('GPS location unavailable'),
-                ],
+              const SizedBox(height: 30),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _isSaving ? null : _saveCheckIn,
+                child: _isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Save Check-In', style: TextStyle(fontSize: 16)),
               ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: isSaving ? null : saveCheckIn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: isSaving
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

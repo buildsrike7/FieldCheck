@@ -1,209 +1,162 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/check_in_record.dart';
-import 'new_check_in_screen.dart';
+import '../services/storage_service.dart';
 import 'detail_screen.dart';
+import 'new_check_in_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
-  List<CheckInRecord> records = [];
-  bool isLoading = true;
+class _HomeScreenState extends State<HomeScreen> {
+  List<CheckInRecord> _records = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    loadRecords();
+    _loadRecords();
   }
 
-  Future<void> loadRecords() async {
-    setState(() => isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-    final String? recordsJson = prefs.getString('check_in_records');
-
+  Future<void> _loadRecords() async {
+    setState(() => _isLoading = true);
+    final records = await StorageService.getRecords();
     if (!mounted) return;
-
-    if (recordsJson != null && recordsJson.isNotEmpty) {
-      final List<dynamic> decodedList = jsonDecode(recordsJson);
-      setState(() {
-        records = decodedList.map((item) => CheckInRecord.fromMap(item)).toList();
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        records = [];
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> saveRecords() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String encodedList = jsonEncode(records.map((r) => r.toMap()).toList());
-    await prefs.setString('check_in_records', encodedList);
-  }
-
-  void deleteRecord(CheckInRecord record) async {
     setState(() {
-      records.removeWhere((item) => item.id == record.id);
+      _records = records;
+      _isLoading = false;
     });
-    await saveRecords();
+  }
+
+  // Confirmation dialog for record deletion
+  Future<void> _confirmAndDelete(CheckInRecord record) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Check-In'),
+        content: Text('Are you sure you want to delete "${record.note}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Record removed')),
-    );
+
+    if (confirmed == true) {
+      await StorageService.deleteRecord(record.id);
+      if (!mounted) return;
+      _loadRecords();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Check-in deleted successfully')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('FieldCheck'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh Logs',
-            onPressed: loadRecords,
-          ),
-        ],
-      ),
-      body: isLoading
+      appBar: AppBar(title: const Text('Check-In History')),
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : records.isEmpty
-              ? buildEmptyState()
-              : buildRecordList(),
-      floatingActionButton: FloatingActionButton(
+          : _records.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  itemCount: _records.length,
+                  padding: const EdgeInsets.all(8),
+                  itemBuilder: (context, index) {
+                    final record = _records[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: File(record.imagePath).existsSync()
+                              ? Image.file(
+                                  File(record.imagePath),
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.broken_image),
+                                ),
+                        ),
+                        title: Text(
+                          record.note,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          '${record.timestamp.toLocal()}'.split('.')[0],
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => _confirmAndDelete(record),
+                        ),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DetailScreen(record: record),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const NewCheckInScreen()),
+            MaterialPageRoute(builder: (_) => const NewCheckInScreen()),
           );
-
-          if (result == true && mounted) {
-            loadRecords();
+          if (result == true) {
+            _loadRecords();
           }
         },
-        child: const Icon(Icons.add),
+        label: const Text('New Check-In'),
+        icon: const Icon(Icons.add_a_photo),
       ),
     );
   }
 
-  Widget buildEmptyState() {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.close, size: 40, color: Colors.grey),
-          ),
+          Icon(Icons.history_toggle_off, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const Text(
-            'No check-ins yet',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+          Text(
+            'No check-ins recorded yet.',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Tap the + button to add your first check-in.',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            'Tap the button below to add your first check-in!',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
       ),
-    );
-  }
-
-  Widget buildRecordList() {
-    return ListView.builder(
-      itemCount: records.length,
-      itemBuilder: (context, index) {
-        final record = records[index];
-
-        return Dismissible(
-          key: Key(record.id),
-          direction: DismissDirection.endToStart,
-          confirmDismiss: (direction) async {
-            return await showDialog<bool>(
-              context: context,
-              builder: (dialogContext) {
-                return AlertDialog(
-                  title: const Text('Confirm Deletion'),
-                  content: const Text('Are you sure you want to delete this record?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-          onDismissed: (_) => deleteRecord(record),
-          background: Container(
-            color: Colors.red,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
-            child: const Icon(Icons.delete, color: Colors.white),
-          ),
-          child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(12),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: record.imagePath.isNotEmpty
-                      ? Image.file(File(record.imagePath), fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image)))
-                      : Container(color: Colors.grey[300], child: const Icon(Icons.image)),
-                ),
-              ),
-              title: Text(
-                record.note.isNotEmpty ? record.note : 'Check-In Record',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  record.timestamp.toLocal().toString().split('.')[0],
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CheckInDetailScreen(record: record),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
     );
   }
 }

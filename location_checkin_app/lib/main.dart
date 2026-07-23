@@ -1,21 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'screens/welcome_screen.dart'; // Import WelcomeScreen instead of HomeScreen directly
+import 'screens/home_screen.dart';
 
-// Global variable to hold available device cameras
-List<CameraDescription> cameras = [];
-
-Future<void> main() async {
-  // Ensure Flutter engine bindings are initialized before calling async platform channels
-  WidgetsFlutterBinding.ensureInitialized();
-
-  try {
-    // Fetch available cameras on device startup
-    cameras = await availableCameras();
-  } on CameraException catch (e) {
-    debugPrint('Error initializing camera: $e');
-  }
-
+void main() {
   runApp(const MyApp());
 }
 
@@ -25,13 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FieldCheck',
-      debugShowCheckedModeBanner: false,
+      title: 'Location Check-In',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(), // Starts on the welcome screen
+      home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
