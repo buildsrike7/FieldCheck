@@ -6,6 +6,24 @@ The user interface uses a clear, sequential linear list view that makes tracking
 
 ---
 
+## 📋 Project Implementation Checklist
+
+This checklist tracks the implementation status of core app features, architectural layers, and system requirements:
+
+| Feature / Requirement | Status | Description |
+| :--- | :---: | :--- |
+| **Welcome Splash Animation** | ✅ **Done** | Animated scale and fade transition screen on startup (`welcome_screen.dart`). |
+| **Real-Time GPS Telemetry** | ✅ **Done** | Integrates `geolocator` to capture accurate latitude, longitude, and accuracy metrics. |
+| **Secure Hardware Lens Isolation** | ✅ **Done** | Custom inline camera capture workspace (`camera_screen.dart`) avoiding OS share sheets. |
+| **Persistent Linear Ledger** | ✅ **Done** | Chronological full-width card view displaying stored logs on the dashboard (`home_screen.dart`). |
+| **Local Permanence Engine** | ✅ **Done** | On-device key-value storage via `shared_preferences` using JSON string serialization. |
+| **Dismissible Swipe Mechanics** | ✅ **Done** | Gesture-based swipe interactions or delete options to remove tracking logs instantly. |
+| **Hardware Guard Rails & Permissions** | ✅ **Done** | Runtime OS permission negotiations using `permission_handler`. |
+| **Cloud Synchronization / Remote DB** | ❌ **Not Done** | Future integration for syncing local ledger records to an external backend server. |
+| **Biometric Authentication Lock** | ❌ **Not Done** | Fingerprint/FaceID security gate required prior to launching the dashboard. |
+
+---
+
 ## ✨ Features
 
 * **Real-Time Hardware Telemetry:** Fetches precise GPS coordinates (`Latitude`, `Longitude`) and accuracy metrics automatically during check-ins.
@@ -50,6 +68,52 @@ The project relies on the following core plugins to bridge the Flutter framework
 * **Local Persistence:** **SharedPreferences** coupled with JSON string serialization (`jsonEncode` / `jsonDecode`) to store ledger states locally on the device permanently.
 
 ---
+
+## 📂 Project Structure
+
+The codebase is organized into modular layers for clean separation of concerns:
+
+```text
+lib/
+├── main.dart                 # Global app entry point, initialization, & theme setup
+├── models/
+│   └── check_in_record.dart    # Data model & JSON serialization logic
+├── services/
+│   └── storage_service.dart    # Local persistence engine using shared_preferences
+└── screens/
+    ├── welcome_screen.dart     # Splash animation & initialization sequence
+    ├── home_screen.dart        # Main dashboard & SharedPreferences ledger stack
+    ├── new_check_in_screen.dart# Check-in form (GPS acquisition & image attachment)
+    ├── camera_screen.dart      # Custom inline camera capture workspace
+    └── detail_screen.dart      # Single log record verification view
+
+## 🚀 Installation & Running
+Prerequisites
+Before setting up the project, make sure you have the following software installed on your machine:
+
+Flutter SDK: Version 3.x.x or higher installed.
+
+Dart SDK: Bundled directly with Flutter.
+
+IDE: Visual Studio Code, Android Studio, or IntelliJ IDEA with the Flutter/Dart plugins installed.
+
+Target Device: An Android or iOS device (or an active emulator/simulator) to run the camera and GPS tasks.
+
+Setup Sequence:
+Follow these precise, step-by-step terminal commands to deploy and run the app:
+
+1. Clone the repository:
+git clone [https://github.com/buildsrike7/FieldCheck.git](https://github.com/buildsrike7/FieldCheck.git)
+
+2. Navigate into the project folder
+cd field-check
+
+3. Install the dependencies
+flutter pub get
+
+4. Run Application
+flutter run
+
 
 ## 📂 Project Structure
 
