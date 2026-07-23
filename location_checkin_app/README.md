@@ -114,3 +114,6 @@ flutter pub get
 4. Run Application
 flutter run
 
+ Testing video:
+https://youtube.com/shorts/6CdKlv2Pbac
+
