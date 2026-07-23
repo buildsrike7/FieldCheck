@@ -20,9 +20,11 @@ The user interface uses a clear, sequential linear list view that makes tracking
 ## 📱 Application Screens
 
 The application flows sequentially through these core views:
-1.  **Welcome & System Validation Screen:** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
-2.  **Linear Ledger Dashboard:** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
-3.  **Camera Capture Layer:** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
+1.  **Welcome & System Validation Screen (`welcome_screen.dart`):** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
+2.  **Linear Ledger Dashboard (`home_screen.dart`):** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
+3.  **Camera Capture Layer (`camera_screen.dart`):** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
+4.  **New Check-In Form (`new_check_in_screen.dart`):** Integrates live GPS polling, photo preview, and note submission.
+5.  **Log Detail View (`detail_screen.dart`):** Displays comprehensive metadata, location coordinates, and full snapshots for individual records.
 
 ---
 
@@ -41,25 +43,21 @@ The project relies on the following core plugins to bridge the Flutter framework
 
 ## 📂 Project Structure
 
-The codebase follows a modular structure separated by distinct architecture spaces:
+The codebase is organized into modular layers for clean separation of concerns:
 
 ```text
 lib/
-├── main.dart                 # Application entry point & global theme registration
-├── core/
-│   ├── constants/            # Global UI tokens and configuration variables
-│   └── utils/                # Serialization helpers and JSON string parsers
-├── data/
-│   └── local_storage.dart    # SharedPreferences read/write interface layer
-└── presentation/
-    ├── screens/
-    │   ├── welcome_screen.dart   # Welcome animation & permission verification layer
-    │   ├── dashboard_screen.dart # Chronological ledger stack view
-    │   └── camera_screen.dart    # Secure inline camera snapshot workspace
-    └── widgets/
-        ├── ledger_card.dart  # Individual record layout with swipe support
-        └── telemetry_bar.dart # GPS metadata readout panel
-```
+├── main.dart                   # Global app entry point, initialization, & theme setup
+├── models/
+│   └── check_in_record.dart    # Data model & JSON serialization logic
+└── screens/
+    ├── welcome_screen.dart     # Splash animation & initialization sequence
+    ├── home_screen.dart        # Main dashboard & SharedPreferences ledger stack
+    ├── new_check_in_screen.dart# Check-in form (GPS acquisition & image attachment)
+    ├── camera_screen.dart      # Custom inline camera capture workspace
+    └── detail_screen.dart      # Single log record verification view
+
+## 🚀 Installation & Running
 Prerequisites
 Before setting up the project, make sure you have the following software installed on your machine:
 
@@ -70,3 +68,19 @@ Dart SDK: Bundled directly with Flutter.
 IDE: Visual Studio Code, Android Studio, or IntelliJ IDEA with the Flutter/Dart plugins installed.
 
 Target Device: An Android or iOS device (or an active emulator/simulator) to run the camera and GPS tasks.
+
+Setup Sequence:
+Follow these precise, step-by-step terminal commands to deploy and run the app:
+
+1. Clone the repository:
+https://github.com/buildsrike7/FieldCheck.git
+
+2. Navigate into the project folder
+cd field-check
+
+3. Install the dependencies
+flutter pub get
+
+4. Run Application
+flutter run
+
