@@ -34,19 +34,19 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
   }
 
   Future<void> _getLocation() async {
-    setState(() => _isLocating ? null : _isLocating = true);
+    setState(() => _isLocating = true);
     try {
       var status = await Permission.location.request();
       if (!mounted) return;
       if (!status.isGranted) {
         await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (dialogContext) => AlertDialog(
             title: const Text('Location Permission Required'),
-            content: const Text('This app needs your GPS location to record check-ins accurately. Please allow location access.'),
+            content: const Text('This app needs your GPS location to record check-ins accurately.'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('OK'),
               ),
             ],
@@ -60,12 +60,12 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
       if (!serviceEnabled) {
         await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (dialogContext) => AlertDialog(
             title: const Text('GPS Disabled'),
-            content: const Text('Please turn on your device location services to fetch coordinates.'),
+            content: const Text('Please turn on your device location services.'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('OK'),
               ),
             ],
@@ -75,9 +75,7 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
       if (!mounted) return;
@@ -137,7 +135,9 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Check-In')),
+      appBar: AppBar(
+        title: const Text('New Check-In'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -145,11 +145,13 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text('Note', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+              const SizedBox(height: 6),
               TextFormField(
                 controller: _noteController,
                 decoration: const InputDecoration(
-                  labelText: 'Check-In Note',
                   border: OutlineInputBorder(),
+                  hintText: 'Enter check-in details...',
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -160,74 +162,133 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
                 maxLines: 2,
               ),
               const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: _openCamera,
+                icon: const Icon(Icons.camera_alt_outlined),
+                label: const Text('Take Photo'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 4.0),
+                  child: Text('required', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ),
+              ),
+              const SizedBox(height: 6),
               _imagePath != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
                         File(_imagePath!),
-                        height: 200,
+                        height: 160,
                         fit: BoxFit.cover,
                       ),
                     )
                   : Container(
-                      height: 150,
+                      height: 140,
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
                         borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey[100],
                       ),
-                      child: const Center(child: Text('No photo captured yet')),
+                      child: const Center(
+                        child: Text(
+                          'IMG / X',
+                          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _openCamera,
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Take Photo'),
-              ),
               const SizedBox(height: 20),
-              Card(
-                elevation: 1,
+              OutlinedButton.icon(
+                onPressed: _isLocating ? null : _getLocation,
+                icon: const Icon(Icons.location_on_outlined),
+                label: const Text('Get Location'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+              const Align(
+                alignment: Alignment.centerRight,
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'GPS Coordinates',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      _isLocating
-                          ? const CircularProgressIndicator()
-                          : _currentPosition != null
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Lat: ${_currentPosition!.latitude.toStringAsFixed(5)}'),
-                                    Text('Long: ${_currentPosition!.longitude.toStringAsFixed(5)}'),
-                                    Text('Accuracy: ${_currentPosition!.accuracy.toStringAsFixed(1)}m'),
-                                  ],
-                                )
-                              : const Text('Location not fetched yet.'),
-                      const SizedBox(height: 10),
-                      OutlinedButton.icon(
-                        onPressed: _isLocating ? null : _getLocation,
-                        icon: const Icon(Icons.location_pin),
-                        label: const Text('Get Location'),
-                      ),
-                    ],
-                  ),
+                  padding: EdgeInsets.only(top: 4.0),
+                  child: Text('required', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade50,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_isLocating)
+                      Row(
+                        children: const [
+                          SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 8),
+                          Text('fetching... (loading state)', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                        ],
+                      )
+                    else if (_currentPosition != null)
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Latitude', style: TextStyle(color: Colors.grey)),
+                              Text(_currentPosition!.latitude.toStringAsFixed(5), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Longitude', style: TextStyle(color: Colors.grey)),
+                              Text(_currentPosition!.longitude.toStringAsFixed(5), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Accuracy', style: TextStyle(color: Colors.grey)),
+                              Text('${_currentPosition!.accuracy.toStringAsFixed(1)} m', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ],
+                      )
+                    else
+                      const Text('Location not fetched yet.', style: TextStyle(color: Colors.grey)),
+                  ],
                 ),
               ),
               const SizedBox(height: 30),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
                 onPressed: _isSaving ? null : _saveCheckIn,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
                 child: _isSaving
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Save Check-In', style: TextStyle(fontSize: 16)),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 10),
+              const Center(
+                child: Text('required', style: TextStyle(fontSize: 11, color: Colors.grey)),
               ),
             ],
           ),

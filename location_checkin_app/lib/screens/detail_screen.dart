@@ -10,71 +10,107 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Check-In Details')),
+      appBar: AppBar(
+        title: const Text('Check-In Detail'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Top Image Viewer / Placeholder block matching wireframe 3
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: File(record.imagePath).existsSync()
                   ? Image.file(
                       File(record.imagePath),
-                      height: 250,
-                      width: double.infinity,
+                      height: 220,
                       fit: BoxFit.cover,
                     )
                   : Container(
-                      height: 250,
-                      color: Colors.grey[300],
-                      child: const Center(child: Text('Image file not found')),
+                      height: 220,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'IMG / X',
+                          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
                     ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             const Text(
-              'Note',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              record.note,
-              style: const TextStyle(fontSize: 18),
-            ),
-            const Divider(height: 30),
-            const Text(
-              'Location Details',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
+              'NOTE',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
             ),
             const SizedBox(height: 8),
-            _buildDetailRow('Latitude', record.latitude.toString()),
-            _buildDetailRow('Longitude', record.longitude.toString()),
-            _buildDetailRow('Accuracy', '${record.accuracy.toStringAsFixed(1)} meters'),
-            const Divider(height: 30),
-            const Text(
-              'Timestamp',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(6),
+                color: Colors.white,
+              ),
+              child: Text(
+                record.note,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
+              ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              record.timestamp.toLocal().toString(),
-              style: const TextStyle(fontSize: 14),
+            const SizedBox(height: 20),
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Latitude', style: TextStyle(color: Colors.grey)),
+                        Text(record.latitude.toStringAsFixed(5), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Longitude', style: TextStyle(color: Colors.grey)),
+                        Text(record.longitude.toStringAsFixed(5), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Accuracy', style: TextStyle(color: Colors.grey)),
+                        Text('${record.accuracy.toStringAsFixed(1)} m', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Created At', style: TextStyle(color: Colors.grey)),
+                        Text(
+                          '${record.timestamp.toLocal()}'.split('.')[0],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value, style: const TextStyle(color: Colors.black87)),
-        ],
       ),
     );
   }

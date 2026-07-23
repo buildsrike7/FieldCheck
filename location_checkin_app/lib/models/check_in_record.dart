@@ -19,32 +19,28 @@ class CheckInRecord {
     required this.timestamp,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'note': note,
-      'imagePath': imagePath,
-      'latitude': latitude,
-      'longitude': longitude,
-      'accuracy': accuracy,
-      'timestamp': timestamp.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'note': note,
+        'imagePath': imagePath,
+        'latitude': latitude,
+        'longitude': longitude,
+        'accuracy': accuracy,
+        'timestamp': timestamp.toIso8601String(),
+      };
 
-  factory CheckInRecord.fromMap(Map<String, dynamic> map) {
-    return CheckInRecord(
-      id: map['id'] ?? '',
-      note: map['note'] ?? '',
-      imagePath: map['imagePath'] ?? '',
-      latitude: map['latitude'] ?? 0.0,
-      longitude: map['longitude'] ?? 0.0,
-      accuracy: map['accuracy'] ?? 0.0,
-      timestamp: DateTime.parse(map['timestamp']),
-    );
-  }
+  factory CheckInRecord.fromJson(Map<String, dynamic> json) => CheckInRecord(
+        id: json['id'],
+        note: json['note'],
+        imagePath: json['imagePath'],
+        latitude: json['latitude'],
+        longitude: json['longitude'],
+        accuracy: json['accuracy'],
+        timestamp: DateTime.parse(json['timestamp']),
+      );
 
-  String toJson() => json.encode(toMap());
+  String serialize() => jsonEncode(toJson());
 
-  factory CheckInRecord.fromJson(String source) =>
-      CheckInRecord.fromMap(json.decode(source));
+  factory CheckInRecord.deserialize(String str) =>
+      CheckInRecord.fromJson(jsonDecode(str));
 }

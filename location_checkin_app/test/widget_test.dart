@@ -15,7 +15,7 @@ void main() {
 
     // Verify that the Welcome/Splash screen renders initially
     expect(find.text('FieldCheck'), findsOneWidget);
-    expect(find.text('Secure Check-Ins'), findsOneWidget);
-    expect(find.byIcon(Icons.location_on_rounded), findsOneWidget);
+    expect(find.text('Your Location-Based Check-In App'), findsOneWidget);
+    expect(find.byIcon(Icons.location_pin), findsOneWidget);
   });
 }
