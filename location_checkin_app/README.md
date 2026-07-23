@@ -66,7 +66,18 @@ IDE: Visual Studio Code, Android Studio, or IntelliJ IDEA with the Flutter/Dart 
 
 Target Device: An Android or iOS device (or an active emulator/simulator) to run the camera and GPS tasks.
 
-Setup Sequence
+Setup Sequence:
 Follow these precise, step-by-step terminal commands to deploy and run the app:
 
-Clone the repository
+1. Clone the repository:
+https://github.com/buildsrike7/FieldCheck.git
+
+2. Navigate into the project folder
+cd field-check
+
+3. Install the dependencies
+flutter pub get
+
+4. Run Application
+flutter run
+
