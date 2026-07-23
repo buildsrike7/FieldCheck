@@ -44,21 +44,20 @@ The project relies on the following core plugins to bridge the Flutter framework
 The codebase follows a modular structure separated by distinct architecture spaces:
 
 ```text
+Structure
 lib/
-├── main.dart                 # Application entry point & global theme registration
-├── core/
-│   ├── constants/            # Global UI tokens and configuration variables
-│   └── utils/                # Serialization helpers and JSON string parsers
-├── data/
-│   └── local_storage.dart    # SharedPreferences read/write interface layer
-└── presentation/
-    ├── screens/
-    │   ├── welcome_screen.dart   # Welcome animation & permission verification layer
-    │   ├── dashboard_screen.dart # Chronological ledger stack view
-    │   └── camera_screen.dart    # Secure inline camera snapshot workspace
-    └── widgets/
-        ├── ledger_card.dart  # Individual record layout with swipe support
-        └── telemetry_bar.dart # GPS metadata readout panel
+│
+├── main.dart             # App entry point, global camera initialization, and root MaterialApp
+│
+├── models/
+│   └── check_in_record.dart # Data model for check-in entries (toMap, fromMap)
+│
+└── screens/
+    ├── welcome_screen.dart   # Onboarding / intro screen ("Get Started")
+    ├── home_screen.dart      # Dashboard displaying saved logs, refreshing, and deletion
+    ├── new_check_in_screen.dart # Screen for capturing location telemetry, photos, and notes
+    ├── camera_screen.dart    # Custom camera preview wrapper using the camera package
+    └── detail_screen.dart    # Detailed view of an individual check-in record and image preview
 ```
 Prerequisites
 Before setting up the project, make sure you have the following software installed on your machine:
