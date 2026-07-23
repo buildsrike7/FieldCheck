@@ -20,9 +20,11 @@ The user interface uses a clear, sequential linear list view that makes tracking
 ## 📱 Application Screens
 
 The application flows sequentially through these core views:
-1.  **Welcome & System Validation Screen:** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
-2.  **Linear Ledger Dashboard:** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
-3.  **Camera Capture Layer:** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
+1.  **Welcome & System Validation Screen (`welcome_screen.dart`):** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
+2.  **Linear Ledger Dashboard (`home_screen.dart`):** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
+3.  **Camera Capture Layer (`camera_screen.dart`):** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
+4.  **New Check-In Form (`new_check_in_screen.dart`):** Integrates live GPS polling, photo preview, and note submission.
+5.  **Log Detail View (`detail_screen.dart`):** Displays comprehensive metadata, location coordinates, and full snapshots for individual records.
 
 ---
 
@@ -41,18 +43,19 @@ The project relies on the following core plugins to bridge the Flutter framework
 
 ## 📂 Project Structure
 
-The single-file entry architecture is structured clearly within `lib/main.dart`:
+The codebase is organized into modular layers for clean separation of concerns:
 
 ```text
 lib/
-└── main.dart                 # Complete single-file application engine
-    ├── CheckInRecord         # Data model & JSON serialization factory
-    ├── MyApp                 # Root MaterialApp setup & Material 3 theme configuration
-    ├── WelcomeAnimationScreen# Initial animated splash screen & permission checks
-    ├── CameraScreen          # Custom inline hardware camera interface
-    ├── NewCheckInScreen      # Check-in submission form (photo + GPS acquisition)
-    ├── CheckInDetailScreen   # Verification detail view for individual logs
-    └── MyHomePage            # Main ledger dashboard & SharedPreferences engine
+├── main.dart                   # Global app entry point, initialization, & theme setup
+├── models/
+│   └── check_in_record.dart    # Data model & JSON serialization logic
+└── screens/
+    ├── welcome_screen.dart     # Splash animation & initialization sequence
+    ├── home_screen.dart        # Main dashboard & SharedPreferences ledger stack
+    ├── new_check_in_screen.dart# Check-in form (GPS acquisition & image attachment)
+    ├── camera_screen.dart      # Custom inline camera capture workspace
+    └── detail_screen.dart      # Single log record verification view
 
 ## 🚀 Installation & Running
 Prerequisites
