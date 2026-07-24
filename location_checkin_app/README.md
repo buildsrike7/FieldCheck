@@ -27,7 +27,7 @@ This checklist tracks the implementation status of core app features, architectu
 ## ✨ Features
 
 * **Real-Time Hardware Telemetry:** Fetches precise GPS coordinates (`Latitude`, `Longitude`) and accuracy metrics automatically during check-ins.
-* **Secure Hardware Lens Isolation:** Captures camera frames directly within an inline app layer, avoiding raw OS share sheets to ensure data integrity.
+* **Secure Hardware Lens Isolation:** Captures camera frames directly within an inline app layer or fetches media safely via the native gallery picker.
 * **Persistent Linear Ledger:** Displays verification logs chronologically in a full-width card layout.
 * **Dismissible Swipe Mechanics:** Provides a clean, gesture-based swipe interaction to remove tracking logs instantly.
 * **Local Permanence Engine:** Saves records directly to the device using secure JSON string serialization so data survives app restarts.
@@ -41,19 +41,20 @@ The application flows sequentially through these core views:
 1. **Welcome & System Validation Screen (`welcome_screen.dart`):** An animated backdrop sequence that verifies native device permission states and checks hardware initialization before mounting the main engine.
 2. **Linear Ledger Dashboard (`home_screen.dart`):** The central hub displaying a chronological stack of verification records. Features interactive card elements and gestural swipe actions.
 3. **Camera Capture Layer (`camera_screen.dart`):** A dedicated workspace containing the inline low-latency camera preview pipeline for secure snapshot captures.
-4. **New Check-In Form (`new_check_in_screen.dart`):** Integrates live GPS polling, photo preview, and note submission.
+4. **New Check-In Form (`new_check_in_screen.dart`):** Integrates live GPS polling, photo preview (via camera or `image_picker`), and note submission.
 5. **Log Detail View (`detail_screen.dart`):** Displays comprehensive metadata, location coordinates, and full snapshots for individual records.
 
 ---
 
 ## 🔌 Plugins & Dependencies
 
-The project relies on the following core plugins to bridge the Flutter framework with native hardware layers:
+The project relies on the following core plugins to bridge the Flutter framework with native hardware layers and media storage:
 
 | Plugin | Version | Purpose |
 | :--- | :--- | :--- |
 | `geolocator` | `^13.0.1` | Handles high-accuracy asynchronous satellite polling for location coordinates. |
 | `camera` | `^0.11.0` | Manages low-latency inline image streams directly from the device lens ecosystem. |
+| `image_picker` | `^1.1.2` | Enables seamless photo selection from the device's local photo library/gallery. |
 | `shared_preferences` | `^2.3.2` | Provides persistent on-device key-value storage via JSON string serialization. |
 | `permission_handler` | `^11.3.1` | Gracefully negotiates native OS permission runtime prompts and fallback alerts. |
 | `lottie` | `^3.1.0` | Renders fluid vector animation sequences for splash screens and UI feedback. |
@@ -65,28 +66,9 @@ The project relies on the following core plugins to bridge the Flutter framework
 * **Framework:** **Flutter (Material 3)** for cross-platform UI composition, responsive layout design, and smooth widget animations.
 * **Language:** **Dart** (Strict null-safe architecture with asynchronous async/await streaming).
 * **Location Services:** **Geolocator API** interacting directly with device hardware components to fetch high-precision coordinates, altitude, and accuracy metrics.
-* **Camera Integration:** **Flutter Camera Package** initializing local lenses for secure, isolated snapshot captures.
+* **Camera & Media Integration:** **Flutter Camera Package** and **Image Picker** initializing local lenses and device storage for secure snapshot captures and media loading.
 * **Local Persistence:** **SharedPreferences** coupled with JSON string serialization (`jsonEncode` / `jsonDecode`) to store ledger states locally on the device permanently.
 
----
-
-## 📂 Project Structure
-
-The codebase is organized into modular layers for clean separation of concerns:
-
-```text
-lib/
-├── main.dart                  # Global app entry point, initialization, & theme setup
-├── models/
-│   └── check_in_record.dart     # Data model & JSON serialization logic
-├── services/
-│   └── storage_service.dart     # Local persistence engine using shared_preferences
-└── screens/
-    ├── welcome_screen.dart      # Splash animation & initialization sequence
-    ├── home_screen.dart         # Main dashboard & SharedPreferences ledger stack
-    ├── new_check_in_screen.dart # Check-in form (GPS acquisition & image attachment)
-    ├── camera_screen.dart       # Custom inline camera capture workspace
-    └── detail_screen.dart       # Single log record verification view
 ---
 
 ## 📂 Project Structure
