@@ -88,25 +88,6 @@ lib/
     ├── new_check_in_screen.dart# Check-in form (GPS acquisition & image attachment)
     ├── camera_screen.dart      # Custom inline camera capture workspace
     └── detail_screen.dart      # Single log record verification view
----
-
-## 📂 Project Structure
-
-The codebase is organized into modular layers for clean separation of concerns:
-
-```text
-lib/
-├── main.dart                 # Global app entry point, initialization, & theme setup
-├── models/
-│   └── check_in_record.dart    # Data model & JSON serialization logic
-├── services/
-│   └── storage_service.dart    # Local persistence engine using shared_preferences
-└── screens/
-    ├── welcome_screen.dart     # Splash animation & initialization sequence
-    ├── home_screen.dart        # Main dashboard & SharedPreferences ledger stack
-    ├── new_check_in_screen.dart# Check-in form (GPS acquisition & image attachment)
-    ├── camera_screen.dart      # Custom inline camera capture workspace
-    └── detail_screen.dart      # Single log record verification view
 
 
 ## 🚀 Installation & Running
