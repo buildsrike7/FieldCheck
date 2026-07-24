@@ -52,10 +52,11 @@ The project relies on the following core plugins to bridge the Flutter framework
 
 | Plugin | Version | Purpose |
 | :--- | :--- | :--- |
-| `geolocator` | `^13.0.2` | Handles high-accuracy asynchronous satellite polling for location coordinates. |
-| `camera` | `^0.11.0+2` | Manages low-latency inline image streams directly from the device lens ecosystem. |
+| `geolocator` | `^13.0.1` | Handles high-accuracy asynchronous satellite polling for location coordinates. |
+| `camera` | `^0.11.0` | Manages low-latency inline image streams directly from the device lens ecosystem. |
 | `shared_preferences` | `^2.3.2` | Provides persistent on-device key-value storage via JSON string serialization. |
 | `permission_handler` | `^11.3.1` | Gracefully negotiates native OS permission runtime prompts and fallback alerts. |
+| `lottie` | `^3.1.0` | Renders fluid vector animation sequences for splash screens and UI feedback. |
 
 ---
 
@@ -67,6 +68,25 @@ The project relies on the following core plugins to bridge the Flutter framework
 * **Camera Integration:** **Flutter Camera Package** initializing local lenses for secure, isolated snapshot captures.
 * **Local Persistence:** **SharedPreferences** coupled with JSON string serialization (`jsonEncode` / `jsonDecode`) to store ledger states locally on the device permanently.
 
+---
+
+## 📂 Project Structure
+
+The codebase is organized into modular layers for clean separation of concerns:
+
+```text
+lib/
+├── main.dart                  # Global app entry point, initialization, & theme setup
+├── models/
+│   └── check_in_record.dart     # Data model & JSON serialization logic
+├── services/
+│   └── storage_service.dart     # Local persistence engine using shared_preferences
+└── screens/
+    ├── welcome_screen.dart      # Splash animation & initialization sequence
+    ├── home_screen.dart         # Main dashboard & SharedPreferences ledger stack
+    ├── new_check_in_screen.dart # Check-in form (GPS acquisition & image attachment)
+    ├── camera_screen.dart       # Custom inline camera capture workspace
+    └── detail_screen.dart       # Single log record verification view
 ---
 
 ## 📂 Project Structure
@@ -113,4 +133,7 @@ flutter pub get
 
 4. Run Application
 flutter run
+
+ Testing video:
+https://youtube.com/shorts/6CdKlv2Pbac?feature=share
 
