@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/check_in_record.dart';
 import '../services/storage_service.dart';
@@ -16,6 +17,7 @@ class NewCheckInScreen extends StatefulWidget {
 class _NewCheckInScreenState extends State<NewCheckInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _noteController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   String? _imagePath;
   Position? _currentPosition;
@@ -30,6 +32,24 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
     if (!mounted) return;
     if (path != null) {
       setState(() => _imagePath = path);
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (!mounted) return;
+      if (image != null) {
+        setState(() => _imagePath = image.path);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not pick image from gallery: $e')),
+      );
     }
   }
 
@@ -96,7 +116,7 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_imagePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please take a photo first.')),
+        const SnackBar(content: Text('Please take or select a photo first.')),
       );
       return;
     }
@@ -162,13 +182,30 @@ class _NewCheckInScreenState extends State<NewCheckInScreen> {
                 maxLines: 2,
               ),
               const SizedBox(height: 20),
-              OutlinedButton.icon(
-                onPressed: _openCamera,
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: const Text('Take Photo'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _openCamera,
+                      icon: const Icon(Icons.camera_alt_outlined),
+                      label: const Text('Take Photo'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickImageFromGallery,
+                      icon: const Icon(Icons.photo_library_outlined),
+                      label: const Text('From Gallery'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const Align(
                 alignment: Alignment.centerRight,
