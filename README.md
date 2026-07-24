@@ -89,7 +89,6 @@ lib/
     ├── camera_screen.dart      # Custom inline camera capture workspace
     └── detail_screen.dart      # Single log record verification view
 
-
 ## 🚀 Installation & Running
 Prerequisites
 Before setting up the project, make sure you have the following software installed on your machine:
